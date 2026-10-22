@@ -1,0 +1,44 @@
+resources:
+  jobs:
+    tcph_job:
+      name: tcph_job
+      tasks:
+        - task_key: Bronze_Ingestion
+          notebook_task:
+            notebook_path: /Workspace/Users/kiritjaink@gmail.com/Cyntexa_Databricks_IAP/TPCH/bronze_ingestion
+            source: WORKSPACE
+          max_retries: 2
+          min_retry_interval_millis: 900000
+          disable_auto_optimization: true
+        - task_key: Silver_Transform
+          depends_on:
+            - task_key: Bronze_Ingestion
+          notebook_task:
+            notebook_path: /Workspace/Users/kiritjaink@gmail.com/Cyntexa_Databricks_IAP/TPCH/silver_cleaning
+            source: WORKSPACE
+          max_retries: 2
+          min_retry_interval_millis: 900000
+          disable_auto_optimization: true
+        - task_key: Gold_Model
+          depends_on:
+            - task_key: Silver_Transform
+          notebook_task:
+            notebook_path: /Workspace/Users/kiritjaink@gmail.com/Cyntexa_Databricks_IAP/TPCH/gold_build
+            source: WORKSPACE
+          max_retries: 1
+          min_retry_interval_millis: 900000
+          disable_auto_optimization: true
+        - task_key: data_quality_check
+          depends_on:
+            - task_key: Gold_Model
+          notebook_task:
+            notebook_path: /Workspace/Users/kiritjaink@gmail.com/Cyntexa_Databricks_IAP/TPCH/data_quality_checks
+            source: WORKSPACE
+          min_retry_interval_millis: 900000
+          disable_auto_optimization: true
+      queue:
+        enabled: true
+      parameters:
+        - name: catalog
+          default: tpch_dev
+      performance_target: PERFORMANCE_OPTIMIZED
